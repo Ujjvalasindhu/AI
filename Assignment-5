@@ -1,0 +1,161 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Untitled2.ipynb",
+      "provenance": [],
+      "authorship_tag": "ABX9TyMBa8ccogbATzWFramUzft/",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/Ujjvalasindhu/AI/blob/main/Assignment-5\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "zMXAtH8x6CwS",
+        "outputId": "1be3c0ef-e998-4099-e359-47fd624f10d3"
+      },
+      "source": [
+        "import numpy as np\n",
+        "import pandas as pd\n",
+        "data = pd.read_excel('Assignment-5.xlsx')\n",
+        "data\n",
+        "lt_3=[]\n",
+        "for i in range(0,data.shape[0]-3):\n",
+        "    lt_3.append(data['Load (kW)'][i])\n",
+        "lt_2=[]\n",
+        "for i in range(1,data.shape[0]-2):\n",
+        "    lt_2.append(data['Load (kW)'][i])\n",
+        "lt_1=[]\n",
+        "for i in range(2,data.shape[0]-1):\n",
+        "    lt_1.append(data['Load (kW)'][i])\n",
+        "lt_0=[]\n",
+        "for i in range(3,data.shape[0]-0):\n",
+        "    lt_0.append(data['Load (kW)'][i])\n",
+        "lt_3Max=np.max(lt_3)\n",
+        "lt_2Max=np.max(lt_2)\n",
+        "lt_1Max=np.max(lt_1)\n",
+        "lt_0Max=np.max(lt_0)\n",
+        "lt_3Min=np.min(lt_3)\n",
+        "lt_2Min=np.min(lt_2)\n",
+        "lt_1Min=np.min(lt_1)\n",
+        "lt_0Min=np.min(lt_0)\n",
+        "for i in range(len(lt_3)):\n",
+        "    lt_0[i]=(lt_0[i]-lt_0Min)/(lt_0Max-lt_0Min)\n",
+        "    lt_1[i]=(lt_1[i]-lt_1Min)/(lt_1Max-lt_1Min)\n",
+        "    lt_2[i]=(lt_2[i]-lt_2Min)/(lt_2Max-lt_2Min)\n",
+        "    lt_3[i]=(lt_3[i]-lt_3Min)/(lt_3Max-lt_3Min)\n",
+        "load=pd.DataFrame({'LT-3':lt_3,'LT-2':lt_2,'LT-1':lt_1, 'LT-0':lt_0})\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "X, y = load.drop('LT-0',axis=1),load['LT-0']\n",
+        "x_train, x_test, y_train, y_test = train_test_split(X, y, test_size = 0.20, random_state = 10)\n",
+        "def gradient(m1,m2,m3,c,x1,x2,x3,y):\n",
+        "    m1_deriv=-1*(y-m1*x1-m2*x2-m3*x3-c)*x1\n",
+        "    m2_deriv=-1*(y-m1*x1-m2*x2-m3*x3-c)*x2\n",
+        "    m3_deriv=-1*(y-m1*x1-m2*x2-m3*x3-c)*x3\n",
+        "    c_deriv=-1*(y-m1*x1-m2*x2-m3*x3-c)\n",
+        "    return m1_deriv,m2_deriv,m3_deriv,c_deriv\n",
+        "import random\n",
+        "m1=random.uniform(-10,10)\n",
+        "m2=random.uniform(-10,10)\n",
+        "m3=random.uniform(-10,10)\n",
+        "c=random.uniform(-10,10)\n",
+        "eta=0.1\n",
+        "max_iter=500\n",
+        "\n",
+        "for iter in range(max_iter):\n",
+        "    for i in range(x_train.shape[0]):\n",
+        "        del_m1,del_m2,del_m3,del_c=gradient(m1,m2,m3,c,x_train.iat[i,0],x_train.iat[i,1],x_train.iat[i,2],y_train.iloc[i])\n",
+        "        m1=m1-eta*del_m1\n",
+        "        m2=m2-eta*del_m2\n",
+        "        m3=m3-eta*del_m3\n",
+        "        c=c-eta*del_c\n",
+        "print('model parameter m and c',m1,m2,m3,c)\n",
+        "y_pred_train = []\n",
+        "for i in range(x_train.shape[0]):\n",
+        "    x1=x_train.iat[i,0]\n",
+        "    x2=x_train.iat[i,1]\n",
+        "    x3=x_train.iat[i,2]\n",
+        "    y=y_train.iat[i]\n",
+        "    y_pred = (m1 * x1) + c + (m2 * x2) + (m3 * x3)\n",
+        "    y_pred_train.append(y_pred)\n",
+        "y_pred_train = np.array(y_pred_train)\n",
+        "y_pred_test = []\n",
+        "for i in range(x_test.shape[0]):\n",
+        "    x1=x_test.iat[i,0]\n",
+        "    x2=x_test.iat[i,1]\n",
+        "    x3=x_test.iat[i,2]\n",
+        "    y=y_test.iat[i]\n",
+        "    y_pred = (m1 * x1) + c + (m2 * x2) + (m3 * x3)\n",
+        "    y_pred_test.append(y_pred)\n",
+        "y_pred_test = np.array(y_pred_test)\n",
+        "y_train_denorm=[]\n",
+        "y_train_pred_denorm=[]\n",
+        "for i in range(y_train.shape[0]):\n",
+        "    y_train_denorm.append(y_train.iloc[i]*(lt_0Max-lt_0Min)+lt_0Min)\n",
+        "    y_train_pred_denorm.append(y_pred_train[i]*(lt_0Max-lt_0Min)+lt_0Min)\n",
+        "y_pred_train=y_train_pred_denorm\n",
+        "y_train=y_train_denorm\n",
+        "y_test_denorm=[]\n",
+        "y_test_pred_denorm=[]\n",
+        "for i in range(y_test.shape[0]):\n",
+        "    y_test_denorm.append(y_test.iloc[i]*(lt_0Max-lt_0Min)+lt_0Min)\n",
+        "    y_test_pred_denorm.append(y_pred_test[i]*(lt_0Max-lt_0Min)+lt_0Min)\n",
+        "y_pred_test=y_test_pred_denorm\n",
+        "y_test=y_test_denorm\n",
+        "import math\n",
+        "from sklearn.metrics import mean_squared_error \n",
+        "from sklearn.metrics import mean_absolute_error\n",
+        "rmse = math.sqrt(mean_squared_error(y_train, y_pred_train)) \n",
+        "print('Root mean square error', rmse) \n",
+        "mse = (mean_squared_error(y_train, y_pred_train)) \n",
+        "print('Mean square error', mse) \n",
+        "mae=mean_absolute_error(y_train, y_pred_train)\n",
+        "print('Mean absolute error', mae)\n",
+        "mse = math.sqrt(mean_squared_error(y_test, y_pred_test)) \n",
+        "print('Root mean square error', mse) \n",
+        "mse = (mean_squared_error(y_test, y_pred_test)) \n",
+        "print('Mean square error', mse) \n",
+        "mae=mean_absolute_error(y_test, y_pred_test)\n",
+        "print('Mean absolute error', mae)\n"
+      ],
+      "execution_count": 4,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "model parameter m and c -0.20929847981904937 0.0304414918695553 0.8551628652827344 0.14672068280326198\n",
+            "Root mean square error 647.1959879937988\n",
+            "Mean square error 418862.6468752693\n",
+            "Mean absolute error 443.24900799818937\n",
+            "Root mean square error 620.8444142830592\n",
+            "Mean square error 385447.7867464749\n",
+            "Mean absolute error 438.0820542411385\n"
+          ]
+        }
+      ]
+    }
+  ]
+}

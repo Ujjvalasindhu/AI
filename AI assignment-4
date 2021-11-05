@@ -1,0 +1,136 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Untitled1.ipynb",
+      "provenance": [],
+      "authorship_tag": "ABX9TyMeervsGZXrbEL7lqK8BF0k",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/Ujjvalasindhu/AI/blob/main/AI%20assignment-4\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Y3vDMtlO40Uk",
+        "outputId": "a08f7d26-0ca1-4ecb-a8fa-1b5d5851020c"
+      },
+      "source": [
+        "import numpy as np\n",
+        "import pandas as pd\n",
+        "data=pd.read_excel('assignment4.xls')\n",
+        "data\n",
+        "maxX=np.max(data['X'])\n",
+        "maxY=np.max(data['Y'])\n",
+        "minX=np.min(data['X'])\n",
+        "minY=np.min(data['Y'])\n",
+        "normalized_x=[]\n",
+        "for i in range(data.shape[0]):\n",
+        "    normalized_x.append((data['X'][i]-minX)/(maxX-minX))\n",
+        "normalized_y=[]\n",
+        "for i in range(data.shape[0]):\n",
+        "    normalized_y.append((data['Y'][i]-minY)/(maxY-minY))\n",
+        "data['X']=normalized_x\n",
+        "data['Y']=normalized_y\n",
+        "data\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "x=data['X']\n",
+        "y=data['Y']\n",
+        "x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.1,random_state=10)\n",
+        "def gradient(m,c,x,y):\n",
+        "    m_deriv=-1*(y-m*x-c)*x\n",
+        "    c_deriv=-1*(y-m*x-c)\n",
+        "    return m_deriv,c_deriv\n",
+        "\n",
+        "m=np.random.uniform(-10,10)\n",
+        "c=np.random.uniform(-10,10)\n",
+        "eta=0.5\n",
+        "max_iter=1000\n",
+        "\n",
+        "for iter in range(max_iter):\n",
+        "    for sample in range(x_train.shape[0]):\n",
+        "        delm,delc=gradient(m, c, x_train.iloc[sample], y_train.iloc[sample])\n",
+        "        m=m-eta*delm\n",
+        "        c=c-eta*delc\n",
+        "print('model parameter m and c',m,c)\n",
+        "y_pred_train = []\n",
+        "for i in x_train:\n",
+        "    y_pred = (m * i) + c\n",
+        "    y_pred_train.append(y_pred)\n",
+        "y_pred_train = np.array(y_pred_train)\n",
+        "y_pred_test = []\n",
+        "for i in x_test:\n",
+        "    y_pred = (m * i) + c\n",
+        "    y_pred_test.append(y_pred)\n",
+        "y_pred_test = np.array(y_pred_test)\n",
+        "y_train_denorm=[]\n",
+        "y_train_pred_denorm=[]\n",
+        "for i in range(y_train.shape[0]):\n",
+        "    y_train_denorm.append(y_train.iloc[i]*(maxY-minY)+minY)\n",
+        "    y_train_pred_denorm.append(y_pred_train[i]*(maxY-minY)+minY)\n",
+        "y_pred_train=y_train_pred_denorm\n",
+        "y_train=y_train_denorm\n",
+        "y_test_denorm=[]\n",
+        "y_test_pred_denorm=[]\n",
+        "for i in range(y_test.shape[0]):\n",
+        "    y_test_denorm.append(y_test.iloc[i]*(maxY-minY)+minY)\n",
+        "    y_test_pred_denorm.append(y_pred_test[i]*(maxY-minY)+minY)\n",
+        "y_pred_test=y_test_pred_denorm\n",
+        "y_test=y_test_denorm\n",
+        "import math\n",
+        "from sklearn.metrics import mean_squared_error \n",
+        "from sklearn.metrics import mean_absolute_error\n",
+        "rmse = math.sqrt(mean_squared_error(y_train, y_pred_train)) \n",
+        "print('Root mean square error', rmse) \n",
+        "mse = (mean_squared_error(y_train, y_pred_train)) \n",
+        "print('Mean square error', mse) \n",
+        "mae=mean_absolute_error(y_train, y_pred_train)\n",
+        "print('Mean absolute error', mae)\n",
+        "rmse = math.sqrt(mean_squared_error(y_test, y_pred_test)) \n",
+        "print('Root mean square error', rmse) \n",
+        "mse = (mean_squared_error(y_test, y_pred_test)) \n",
+        "print('Mean square error', mse) \n",
+        "mae=mean_absolute_error(y_test, y_pred_test)\n",
+        "print('Mean absolute error', mae)\n"
+      ],
+      "execution_count": 1,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "*** No CODEPAGE record, no encoding_override: will use 'ascii'\n",
+            "model parameter m and c -0.3415269221585566 0.6830609053858352\n",
+            "Root mean square error 52.13838925710648\n",
+            "Mean square error 2718.4116343255564\n",
+            "Mean absolute error 42.31191163817268\n",
+            "Root mean square error 59.1962669857888\n",
+            "Mean square error 3504.198025052789\n",
+            "Mean absolute error 54.90229434083232\n"
+          ]
+        }
+      ]
+    }
+  ]
+}
